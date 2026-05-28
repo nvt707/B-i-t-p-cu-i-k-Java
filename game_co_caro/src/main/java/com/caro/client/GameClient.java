@@ -9,12 +9,11 @@ import java.io.*;
 import java.net.Socket;
 
 public class GameClient {
-    // UI Bàn cờ
+    
     private JFrame gameFrame;
     private JButton[][] buttons;
     private JLabel statusLabel;
 
-    // UI Sảnh chờ
     private JFrame lobbyFrame;
     private DefaultListModel<String> roomListModel;
 
@@ -56,9 +55,7 @@ public class GameClient {
         }
     }
 
-    // ==========================================
-    // 1. GIAO DIỆN SẢNH CHỜ ONLINE
-    // ==========================================
+    
     private void connectAndShowLobby() {
         try {
             String serverIp = JOptionPane.showInputDialog(null,
@@ -136,7 +133,6 @@ public class GameClient {
 
         String command = parts[0].trim();
 
-        // 1. CẬP NHẬT DANH SÁCH PHÒNG
         if (command.equals("ROOMS_LIST")) {
             SwingUtilities.invokeLater(() -> {
                 roomListModel.clear();
@@ -148,14 +144,14 @@ public class GameClient {
                 }
             });
         }
-        // 2. HIỆN THÔNG BÁO CHO CHÍNH NGƯỜI VỪA BẤM "TẠO PHÒNG"
+            
         else if (command.equals("ROOM_CREATED")) {
             SwingUtilities.invokeLater(() -> {
                 roomListModel.clear();
                 roomListModel.addElement("Đã tạo phòng " + parts[1].trim() + ". Đang chờ đối thủ...");
             });
         }
-        // 3. XỬ LÝ KHI TRẬN ĐẤU BẮT ĐẦU
+            
         else if (command.equals("START")) {
             mySymbol = parts[1].trim();
             myTurn = mySymbol.equals("X");
@@ -166,7 +162,7 @@ public class GameClient {
                 statusLabel.setText(myTurn ? "Trận đấu bắt đầu! Lượt của bạn." : "Chờ đối thủ đánh...");
             });
         }
-        // 4. XỬ LÝ NƯỚC ĐI
+            
         else if (command.equals("MOVE")) {
             try {
                 int r = Integer.parseInt(parts[parts.length - 2].trim());
@@ -189,9 +185,7 @@ public class GameClient {
         }
     }
 
-    // ==========================================
-    // 2. GIAO DIỆN BÀN CỜ
-    // ==========================================
+    
     private void initBoardUI() {
         gameFrame = new JFrame("Cờ Caro " + (isOnline ? "Online" : "vs AI") + " - " + size + "x" + size);
 
@@ -230,19 +224,17 @@ public class GameClient {
     private void handleMove(int row, int col) {
         if (!myTurn || isGameOver || !buttons[row][col].getText().equals("")) return;
 
-        // Hiển thị quân của mình
         buttons[row][col].setText(mySymbol);
         buttons[row][col].setForeground(mySymbol.equals("X") ? Color.RED : Color.BLUE);
         myTurn = false;
 
         if (isOnline) {
-            // ✅ FIX: Gửi nước đi TRƯỚC khi kiểm tra thắng/thua
-            //    (tránh System.exit() chạy trước khi P2 nhận được nước đi cuối)
+            
             sendMsg("MOVE," + row + "," + col);
             statusLabel.setText("Đang chờ đối thủ...");
             checkGameState(mySymbol);
         } else {
-            // Chơi với máy
+            
             if (checkGameState(mySymbol)) return;
             board.move(row, col, 'X');
             statusLabel.setText("Máy đang suy nghĩ...");
@@ -268,9 +260,7 @@ public class GameClient {
         return false;
     }
 
-    // ==========================================
-    // Thuật toán Check Win – quét 4 hướng
-    // ==========================================
+   
     private boolean checkWin(String symbol) {
         int winReq = (size == 3) ? 3 : 5;
         for (int i = 0; i < size; i++) {
@@ -298,9 +288,7 @@ public class GameClient {
         return true;
     }
 
-    // ==========================================
-    // Kết thúc game + hỏi chơi lại
-    // ==========================================
+    
     private void endGame(String message) {
         isGameOver = true;
         myTurn = false;
